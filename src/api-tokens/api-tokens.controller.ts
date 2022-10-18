@@ -1,8 +1,11 @@
-import {Body, Controller, Delete, Get, Param, Patch, Post} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Patch, Post, UseGuards} from '@nestjs/common';
 import {AddApiTokenDto} from "./dto";
 import {ApiTokensService} from "./api-tokens.service";
+import {AuthGuard} from "../auth";
+
 
 @Controller('apiTokens')
+@UseGuards(AuthGuard)
 export class ApiTokensController {
     constructor(private apiTokensService: ApiTokensService) {}
 
