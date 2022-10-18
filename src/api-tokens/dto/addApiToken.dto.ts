@@ -9,3 +9,4 @@ export class AddApiTokenDto {
     @IsString()
     pipedriveApiKey: string;
 }
+

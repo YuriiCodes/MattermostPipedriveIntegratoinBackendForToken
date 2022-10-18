@@ -7,7 +7,8 @@ import {AuthGuard} from "../auth";
 @Controller('apiTokens')
 @UseGuards(AuthGuard)
 export class ApiTokensController {
-    constructor(private apiTokensService: ApiTokensService) {}
+    constructor(private apiTokensService: ApiTokensService) {
+    }
 
     @Get("/:mattermostUserId")
     async getApiToken(@Param("mattermostUserId") mattermostUserId: string) {
@@ -23,4 +24,10 @@ export class ApiTokensController {
     async deleteApiToken(@Param("mattermostUserId") mattermostUserId: string) {
         return await this.apiTokensService.deleteApiToken(mattermostUserId);
     }
+
+    @Patch("")
+    async updateApiToken(@Body() dto: AddApiTokenDto) {
+        return this.apiTokensService.updateApiToken(dto);
+    }
+
 }
