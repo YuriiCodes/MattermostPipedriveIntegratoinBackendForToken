@@ -4,6 +4,7 @@ import {UserModule} from './user/user.module';
 import {ApiTokensModule} from './api-tokens/api-tokens.module';
 import {PrismaModule} from './prisma/prisma.module';
 import {ConfigModule} from "@nestjs/config";
+import {PipedriveModule} from "./pipedrive/pipedrive.module";
 
 @Module({
     imports: [
@@ -13,7 +14,9 @@ import {ConfigModule} from "@nestjs/config";
         AuthModule,
         UserModule,
         ApiTokensModule,
-        PrismaModule],
+        PrismaModule,
+        PipedriveModule
+    ],
 })
 export class AppModule {
 }
