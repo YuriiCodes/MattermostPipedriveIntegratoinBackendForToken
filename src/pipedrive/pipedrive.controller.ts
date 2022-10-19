@@ -1,6 +1,7 @@
-import {Controller, Get, Post, Body, Param, Delete} from '@nestjs/common';
+import {Controller, Get, Post, Body} from '@nestjs/common';
 import {PipedriveService} from './pipedrive.service';
 import {CreatePipedriveDto} from './dto/create-pipedrive.dto';
+import {CreatePipedriveLeadDto} from "./dto/create-pipedrive-lead.dto";
 
 @Controller('pipedrive')
 export class PipedriveController {
@@ -18,7 +19,7 @@ export class PipedriveController {
     }
 
     @Post("/leads")
-    createLead(@Body() dto: CreatePipedriveDto) {
+    createLead(@Body() dto: CreatePipedriveLeadDto) {
         return this.pipedriveService.createLead(dto);
 
     }
