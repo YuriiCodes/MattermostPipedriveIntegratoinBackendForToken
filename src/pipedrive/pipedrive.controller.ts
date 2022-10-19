@@ -5,8 +5,7 @@ import {CreatePipedriveLeadDto} from "./dto/create-pipedrive-lead.dto";
 
 @Controller('pipedrive')
 export class PipedriveController {
-    constructor(private readonly pipedriveService: PipedriveService) {
-    }
+    constructor(private readonly pipedriveService: PipedriveService) {}
 
     @Post("/persons")
     createPerson(@Body() dto: CreatePipedriveDto) {
@@ -21,7 +20,6 @@ export class PipedriveController {
     @Post("/leads")
     createLead(@Body() dto: CreatePipedriveLeadDto) {
         return this.pipedriveService.createLead(dto);
-
     }
 
 }

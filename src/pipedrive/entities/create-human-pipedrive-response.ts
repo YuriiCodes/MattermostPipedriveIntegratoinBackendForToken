@@ -85,7 +85,7 @@ export interface RelatedObjects {
     user: User;
 }
 
-export interface CreateHumanPipedriveResponseDto {
+export interface CreateHumanPipedriveResponse {
     success: boolean;
     data: Data;
     related_objects: RelatedObjects;
