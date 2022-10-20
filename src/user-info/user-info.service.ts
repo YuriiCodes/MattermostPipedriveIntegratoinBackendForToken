@@ -1,10 +1,10 @@
 import {BadRequestException, ConflictException, Injectable} from '@nestjs/common';
 import {PrismaService} from "../prisma/prisma.service";
-import {AddApiTokenDto} from "./dto";
+import {AddUserInfoDto} from "./dto";
 
 
 @Injectable()
-export class ApiTokensService {
+export class UserInfoService {
     constructor(private prisma: PrismaService) {
     }
 
@@ -22,7 +22,7 @@ export class ApiTokensService {
     }
 
     // Read token
-    async getApiToken(mattermostUserId: string) {
+    async getUserInfo(mattermostUserId: string) {
         const res = await this.getExistingApiTokenObj(mattermostUserId);
         if (res == null) {
             return {
@@ -34,7 +34,10 @@ export class ApiTokensService {
     }
 
     // Create new token
-    async registerApiToken(dto: AddApiTokenDto) {
+    async addNewUserInfo(dto: AddUserInfoDto) {
+        console.log({
+            dto
+        });
         // Check if this token is not already in the database
         const res = await this.getExistingApiTokenObj(dto.mattermostUserId);
 
@@ -47,6 +50,9 @@ export class ApiTokensService {
                 data: {
                     mattermostUserId: dto.mattermostUserId,
                     pipedriveApiKey: dto.pipedriveApiKey,
+
+                    linkedInLogin: dto.login,
+                    linkedInPassword: dto.password,
                 },
             })
         } catch (err) {
@@ -56,7 +62,7 @@ export class ApiTokensService {
     }
 
     // Delete token record
-    async deleteApiToken(mattermostUserId: string) {
+    async deleteUserInfo(mattermostUserId: string) {
         const userInfoBeforeDelete = await this.getExistingApiTokenObj(mattermostUserId);
 
         if (userInfoBeforeDelete === null) {
@@ -77,7 +83,7 @@ export class ApiTokensService {
 
     }
 
-    async updateApiToken(dto: AddApiTokenDto) {
+    async updateUserInfo(dto: AddUserInfoDto) {
         const userInfoBeforeUpdate = await this.getExistingApiTokenObj(dto.mattermostUserId);
         if (userInfoBeforeUpdate === null) {
             throw new ConflictException({

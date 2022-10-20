@@ -19,11 +19,14 @@ model User{
     hash String
 }
 
-model  apiToken {
+model apiToken {
     id String @id @default(auto()) @map("_id") @db.ObjectId
     createdAt DateTime @default(now())
     updateAr DateTime @updatedAt
 
     mattermostUserId String
     pipedriveApiKey String
+
+    linkedInLogin String
+    linkedInPassword String
 }
