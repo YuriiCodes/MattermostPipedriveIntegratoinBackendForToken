@@ -1,3 +1,5 @@
+import {ApiProperty} from "@nestjs/swagger";
+
 export interface Phone {
     value: string;
     primary: boolean;
@@ -110,10 +112,14 @@ export interface RelatedObjects {
     user: User;
 }
 
-export interface getAllPersonsPipedriveResponse {
+export class getAllPersonsPipedriveResponse {
+    @ApiProperty()
     success: boolean;
+    @ApiProperty()
     data: responseData[];
+    @ApiProperty()
     additional_data: AdditionalData;
+    @ApiProperty()
     related_objects: RelatedObjects;
 }
 

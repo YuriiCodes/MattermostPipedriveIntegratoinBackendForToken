@@ -32,33 +32,32 @@ import {forbiddenResponse, userInfoResponse, userNotFoundResponse} from "./entit
 @ApiForbiddenResponse({description: 'Access key is not valid', type: forbiddenResponse})
 @UseGuards(AuthGuard)
 export class UserInfoController {
-    constructor(private userInfoService: UserInfoService) {}
+    constructor(private userInfoService: UserInfoService) {
+    }
 
 
     @ApiOkResponse({description: 'User is successfully retrieved', type: userInfoResponse})
     @ApiConflictResponse({description: 'User not found', type: userNotFoundResponse})
     @Get("/:mattermostUserId")
-    async getUserInfo(@Param("mattermostUserId") mattermostUserId: string):Promise<userInfoResponse | ConflictException> {
+    async getUserInfo(@Param("mattermostUserId") mattermostUserId: string): Promise<userInfoResponse | ConflictException> {
         return this.userInfoService.getUserInfo(mattermostUserId);
     }
-
 
 
     @Post("")
     @ApiOkResponse({description: 'User created successfully', type: userInfoResponse})
     @ApiBadRequestResponse({description: 'Bad request'})
     @ApiConflictResponse({description: 'User not found', type: userNotFoundResponse})
-    async addNewUserInfo(@Body() dto: AddUserInfoDto): Promise<userInfoResponse | BadRequestException | ConflictException>{
+    async addNewUserInfo(@Body() dto: AddUserInfoDto): Promise<userInfoResponse | BadRequestException | ConflictException> {
         return this.userInfoService.addNewUserInfo(dto);
     }
-
 
 
     @ApiOkResponse({description: 'User deleted successfully', type: userInfoResponse})
     @ApiConflictResponse({description: 'User not found', type: userNotFoundResponse})
     @ApiBadRequestResponse({description: 'Bad request'})
     @Delete("/:mattermostUserId")
-    async deleteUserInfo(@Param("mattermostUserId") mattermostUserId: string) : Promise<userInfoResponse | ConflictException | BadRequestException> {
+    async deleteUserInfo(@Param("mattermostUserId") mattermostUserId: string): Promise<userInfoResponse | ConflictException | BadRequestException> {
         return await this.userInfoService.deleteUserInfo(mattermostUserId);
     }
 
