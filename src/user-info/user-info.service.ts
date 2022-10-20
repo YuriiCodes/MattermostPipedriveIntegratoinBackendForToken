@@ -1,6 +1,7 @@
-import {BadRequestException, ConflictException, Injectable} from '@nestjs/common';
+import {BadRequestException, ConflictException, Injectable, NotFoundException} from '@nestjs/common';
 import {PrismaService} from "../prisma/prisma.service";
 import {AddUserInfoDto} from "./dto";
+import {userInfoResponse} from "./entities/types";
 
 
 @Injectable()
@@ -21,20 +22,20 @@ export class UserInfoService {
         })
     }
 
-    // Read token
-    async getUserInfo(mattermostUserId: string) {
+    // Read user info
+    async getUserInfo(mattermostUserId: string) : Promise<userInfoResponse | NotFoundException>{
         const res = await this.getExistingApiTokenObj(mattermostUserId);
         if (res == null) {
-            return {
+            throw new ConflictException({
                 msg: `no api key for user with mattermost id ${mattermostUserId}`,
                 mattermostUserId
-            }
+            })
         }
         return res;
     }
 
     // Create new token
-    async addNewUserInfo(dto: AddUserInfoDto) {
+    async addNewUserInfo(dto: AddUserInfoDto) :Promise<userInfoResponse | BadRequestException | ConflictException> {
         console.log({
             dto
         });
@@ -62,7 +63,7 @@ export class UserInfoService {
     }
 
     // Delete token record
-    async deleteUserInfo(mattermostUserId: string) {
+    async deleteUserInfo(mattermostUserId: string): Promise<userInfoResponse | ConflictException | BadRequestException>{
         const userInfoBeforeDelete = await this.getExistingApiTokenObj(mattermostUserId);
 
         if (userInfoBeforeDelete === null) {
@@ -83,7 +84,7 @@ export class UserInfoService {
 
     }
 
-    async updateUserInfo(dto: AddUserInfoDto) {
+    async updateUserInfo(dto: AddUserInfoDto): Promise<userInfoResponse | ConflictException | BadRequestException> {
         const userInfoBeforeUpdate = await this.getExistingApiTokenObj(dto.mattermostUserId);
         if (userInfoBeforeUpdate === null) {
             throw new ConflictException({
