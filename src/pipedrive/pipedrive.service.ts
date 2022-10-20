@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {CreatePipedriveDto} from './dto/create-pipedrive.dto';
+import {CreatePipedrivePersonDto} from './dto/create-pipedrive-person.dto';
 import {PipedriveApiService} from "./pipedrive-api.service";
 import {CreateHumanPipedriveResponse} from "./entities/create-human-pipedrive-response";
 import {CreatePipedriveLeadDto} from "./dto/create-pipedrive-lead.dto";
@@ -12,7 +12,7 @@ export class PipedriveService {
 
 
     /*  PERSONS SECTION  */
-    async createPerson(dto: CreatePipedriveDto): Promise<CreateHumanPipedriveResponse> {
+    async createPerson(dto: CreatePipedrivePersonDto): Promise<CreateHumanPipedriveResponse> {
         console.log(dto);
         return await this.pdApiService.getHumansApi().addPerson({
             "name": dto.name,

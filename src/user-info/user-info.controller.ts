@@ -2,9 +2,15 @@ import {Body, Controller, Delete, Get, Param, Patch, Post, UseGuards} from '@nes
 import {AddUserInfoDto} from "./dto";
 import {UserInfoService} from "./user-info.service";
 import {AuthGuard} from "../auth";
+import {ApiHeader, ApiTags} from "@nestjs/swagger";
 
-
-@Controller('apiTokens')
+@ApiHeader({
+    name: 'access-key',
+    description: 'Access key to enter API',
+    required: true,
+})
+@ApiTags('Working with sales department workers data')
+@Controller('userInfo')
 @UseGuards(AuthGuard)
 export class UserInfoController {
     constructor(private userInfoService: UserInfoService) {
