@@ -20,7 +20,7 @@ import {
     ApiOkResponse,
     ApiTags
 } from "@nestjs/swagger";
-import {forbiddenResponse, userInfoResponse, userNotFoundResponse} from "./entities/types";
+import {forbiddenResponse, isUserDataSubmittedResponse, userInfoResponse, userNotFoundResponse} from "./entities/types";
 
 @ApiHeader({
     name: 'access-key',
@@ -32,8 +32,7 @@ import {forbiddenResponse, userInfoResponse, userNotFoundResponse} from "./entit
 @ApiForbiddenResponse({description: 'Access key is not valid', type: forbiddenResponse})
 @UseGuards(AuthGuard)
 export class UserInfoController {
-    constructor(private userInfoService: UserInfoService) {
-    }
+    constructor(private userInfoService: UserInfoService) {}
 
 
     @ApiOkResponse({description: 'User is successfully retrieved', type: userInfoResponse})
@@ -42,6 +41,15 @@ export class UserInfoController {
     async getUserInfo(@Param("mattermostUserId") mattermostUserId: string): Promise<userInfoResponse | ConflictException> {
         return this.userInfoService.getUserInfo(mattermostUserId);
     }
+
+
+    @ApiOkResponse({description: 'User is successfully retrieved', type: userInfoResponse})
+    @ApiConflictResponse({description: 'User not found', type: userNotFoundResponse})
+    @Get("IsDataSubmitted/:mattermostUserId")
+    async isUserDataSubmitted(@Param("mattermostUserId") mattermostUserId: string): Promise<isUserDataSubmittedResponse> {
+        return this.userInfoService.isUserDataSubmitted(mattermostUserId);
+    }
+
 
 
     @Post("")

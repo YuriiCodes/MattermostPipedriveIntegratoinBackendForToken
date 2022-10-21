@@ -1,7 +1,7 @@
 import {BadRequestException, ConflictException, Injectable, NotFoundException} from '@nestjs/common';
 import {PrismaService} from "../prisma/prisma.service";
 import {AddUserInfoDto} from "./dto";
-import {userInfoResponse} from "./entities/types";
+import {isUserDataSubmittedResponse, userInfoResponse} from "./entities/types";
 
 
 @Injectable()
@@ -34,6 +34,17 @@ export class UserInfoService {
         return res;
     }
 
+    async isUserDataSubmitted(mattermostUserId: string) : Promise<isUserDataSubmittedResponse>{
+        const res = await this.getExistingApiTokenObj(mattermostUserId);
+        if (res == null) {
+            return {
+                status: false
+            }
+        }
+        return {
+            status: true
+        };
+    }
     // Create new token
     async addNewUserInfo(dto: AddUserInfoDto) :Promise<userInfoResponse | BadRequestException | ConflictException> {
         console.log({

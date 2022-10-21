@@ -17,6 +17,11 @@ export class userInfoResponse {
     linkedInPassword: string;
 }
 
+export class isUserDataSubmittedResponse {
+    @ApiProperty()
+    status: boolean;
+}
+
 export  class forbiddenResponse {
     @ApiProperty()
     statusCode: number;
