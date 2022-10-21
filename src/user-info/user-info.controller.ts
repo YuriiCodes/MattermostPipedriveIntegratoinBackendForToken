@@ -28,7 +28,7 @@ import {forbiddenResponse, isUserDataSubmittedResponse, userInfoResponse, userNo
     required: true,
 })
 @ApiTags('Working with sales department workers data')
-@Controller('userInfo')
+@Controller('users')
 @ApiForbiddenResponse({description: 'Access key is not valid', type: forbiddenResponse})
 @UseGuards(AuthGuard)
 export class UserInfoController {
@@ -37,7 +37,7 @@ export class UserInfoController {
 
     @ApiOkResponse({description: 'User is successfully retrieved', type: userInfoResponse})
     @ApiConflictResponse({description: 'User not found', type: userNotFoundResponse})
-    @Get("/:mattermostUserId")
+    @Get("get/:mattermostUserId")
     async getUserInfo(@Param("mattermostUserId") mattermostUserId: string): Promise<userInfoResponse | ConflictException> {
         return this.userInfoService.getUserInfo(mattermostUserId);
     }
