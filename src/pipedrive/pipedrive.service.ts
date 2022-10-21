@@ -5,17 +5,21 @@ import {CreateHumanPipedriveResponse} from "./entities/create-human-pipedrive-re
 import {CreatePipedriveLeadDto} from "./dto/create-pipedrive-lead.dto";
 import {getAllPersonsPipedriveResponse} from "./entities/get-all-persons-pipedrive-response";
 import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-response";
-import {ProcessFormSubmitFromClientDto} from "./dto/process-form-submit-from-client.dto";
+
+
 
 @Injectable()
 export class PipedriveService {
-    constructor(private pdApiService: PipedriveApiService) {
-    }
+    constructor(private pdApiService: PipedriveApiService) {}
 
     /*  PERSONS SECTION  */
     async createPerson(dto: CreatePipedrivePersonDto): Promise<CreateHumanPipedriveResponse> {
         console.log(dto);
         return await this.pdApiService.getHumansApi().addPerson({
+            // This value is a key for custom person field for position
+            "cbf02adcbf18655ca250a8d8fbfba87bd99a2b6c": dto.position,
+            // This value is a key for custom person field for LinkedInUrl
+            "11ad567abeb05281bd450eb7cb64cfd5b82c01ff": dto.LinkedIn,
             "name": dto.name,
             // "name": "createPipedriveDto.name",
             "email": [
@@ -48,7 +52,7 @@ export class PipedriveService {
         // Create a lead
         return await this.pdApiService.getLeadsApi().addLead({
             title: dto.lead_name,
-            person_id: dto.person_id
+            person_id: dto.person_id,
         })
     }
 
@@ -56,14 +60,16 @@ export class PipedriveService {
     This method firstly creates a person in pipedrive persons database, gets ID of newly created person,
      and then uses this id to create lead. We need person_id to attach person with that ID it to lead.
      */
-    async processFormFromClient(dto: ProcessFormSubmitFromClientDto): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
+    async processFormFromClient(dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto)): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
         // Create person
         let personId: number = -1;
         try {
             const personInfo = await this.createPerson({
                 name: dto.name,
                 email: dto.email,
-                phone: dto.phone
+                phone: dto.phone,
+                position: dto.position,
+                LinkedIn: dto.LinkedIn,
             });
             personId = personInfo.data.id;
         } catch (e) {

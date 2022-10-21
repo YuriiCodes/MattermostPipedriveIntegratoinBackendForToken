@@ -8,7 +8,6 @@ import {CreateHumanPipedriveResponse} from "./entities/create-human-pipedrive-re
 import {forbiddenResponse} from "../user-info/entities/types";
 import {getAllPersonsPipedriveResponse} from "./entities/get-all-persons-pipedrive-response";
 import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-response";
-import {ProcessFormSubmitFromClientDto} from "./dto/process-form-submit-from-client.dto";
 
 @ApiHeader({
     name: 'access-key',
@@ -42,7 +41,7 @@ export class PipedriveController {
     }
     @ApiOkResponse({description:"A method to validate data submission from component form.", type: createLeadPipedriveResponse})
     @Post("/validateClientForm")
-    processFormFromClient(@Body() dto: ProcessFormSubmitFromClientDto): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
+    processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto)): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
         return this.pipedriveService.processFormFromClient(dto);
     }
 }

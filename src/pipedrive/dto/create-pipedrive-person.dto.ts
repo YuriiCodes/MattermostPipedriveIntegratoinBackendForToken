@@ -1,4 +1,4 @@
-import {IsEmail, IsNotEmpty, IsString} from "class-validator";
+import {IsEmail, IsNotEmpty, IsString, IsUrl} from "class-validator";
 import {ApiProperty} from "@nestjs/swagger";
 
 export class CreatePipedrivePersonDto {
@@ -26,4 +26,23 @@ export class CreatePipedrivePersonDto {
     @IsNotEmpty()
     @IsString()
     phone: string;
+
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        description: "A 'Position' custom field that represents current job position of a person to be added.",
+        example: "Senior Software Engineer",
+    })
+    position: string;
+
+
+    @IsString()
+    @IsNotEmpty()
+    @IsUrl()
+    @ApiProperty({
+        description: "A 'LinkedIn' custom field that represents LinkedIn url of a person to be added.",
+        example: "Senior Software Engineer",
+    })
+    LinkedIn: string;
 }
