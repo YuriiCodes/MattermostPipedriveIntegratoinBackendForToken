@@ -1,34 +1,14 @@
-import {IsEmail, IsNotEmpty, IsString} from "class-validator";
+import {IsNotEmpty, IsNumber, IsString} from "class-validator";
 import {ApiProperty} from "@nestjs/swagger";
 
 export class CreatePipedriveLeadDto {
     @IsNotEmpty()
-    @IsString()
-    @IsEmail()
+    @IsNumber()
     @ApiProperty({
-        description: "Email of person to be created in Pipedrive persons database. This person will be than associated with created lead.",
-        example: "mail@example.com",
+        description: "Id of person in pipedrive persons database. This person will be attached to the lead.",
+        example: "1",
     })
-    email: string;
-
-
-    @ApiProperty({
-        description: "Name of person to be created in Pipedrive persons database. This person will be than associated with created lead.",
-        example: "John Galt",
-    })
-    @IsNotEmpty()
-    @IsString()
-    name: string;
-
-
-    @ApiProperty({
-        description: "Phone of person to be created in Pipedrive persons database. This person will be than associated with created lead.",
-        example: "41040283535",
-    })
-    @IsNotEmpty()
-    @IsString()
-    phone: string;
-
+    person_id: number;
 
     @ApiProperty({
         description: "A title of lead to be created in Pipedrive leads database",

@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, UseGuards} from '@nestjs/common';
+import {Controller, Get, Post, Body, UseGuards, ServiceUnavailableException} from '@nestjs/common';
 import {PipedriveService} from './pipedrive.service';
 import {CreatePipedrivePersonDto} from './dto/create-pipedrive-person.dto';
 import {CreatePipedriveLeadDto} from "./dto/create-pipedrive-lead.dto";
@@ -8,6 +8,7 @@ import {CreateHumanPipedriveResponse} from "./entities/create-human-pipedrive-re
 import {forbiddenResponse} from "../user-info/entities/types";
 import {getAllPersonsPipedriveResponse} from "./entities/get-all-persons-pipedrive-response";
 import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-response";
+import {ProcessFormSubmitFromClientDto} from "./dto/process-form-submit-from-client.dto";
 
 @ApiHeader({
     name: 'access-key',
@@ -39,5 +40,9 @@ export class PipedriveController {
     createLead(@Body() dto: CreatePipedriveLeadDto):Promise<createLeadPipedriveResponse> {
         return this.pipedriveService.createLead(dto);
     }
-
+    @ApiOkResponse({description:"A method to validate data submission from component form.", type: createLeadPipedriveResponse})
+    @Post("/validateClientForm")
+    processFormFromClient(@Body() dto: ProcessFormSubmitFromClientDto): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
+        return this.pipedriveService.processFormFromClient(dto);
+    }
 }
