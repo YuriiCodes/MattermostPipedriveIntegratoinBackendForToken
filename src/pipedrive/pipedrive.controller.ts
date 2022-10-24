@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, UseGuards, ServiceUnavailableException} from '@nestjs/common';
+import {Controller, Get, Post, Body, UseGuards, ServiceUnavailableException, Param} from '@nestjs/common';
 import {PipedriveService} from './pipedrive.service';
 import {CreatePipedrivePersonDto} from './dto/create-pipedrive-person.dto';
 import {CreatePipedriveLeadDto} from "./dto/create-pipedrive-lead.dto";
@@ -8,6 +8,8 @@ import {CreateHumanPipedriveResponse} from "./entities/create-human-pipedrive-re
 import {forbiddenResponse} from "../user-info/entities/types";
 import {getAllPersonsPipedriveResponse} from "./entities/get-all-persons-pipedrive-response";
 import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-response";
+import {FindPersonsPipedriveResponse} from "./entities/find-persons-pipedrive-response";
+
 
 @ApiHeader({
     name: 'access-key',
@@ -20,26 +22,44 @@ import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-resp
 @Controller('pipedrive')
 @UseGuards(AuthGuard)
 export class PipedriveController {
-    constructor(private readonly pipedriveService: PipedriveService) {}
+    constructor(private readonly pipedriveService: PipedriveService) {
+    }
 
-    @ApiOkResponse({description: 'Creates a person in PipeDrive database and returns created user.',  type: CreateHumanPipedriveResponse})
+    @ApiOkResponse({
+        description: 'Creates a person in PipeDrive database and returns created user.',
+        type: CreateHumanPipedriveResponse
+    })
     @Post("/persons")
-    createPerson(@Body() dto: CreatePipedrivePersonDto):Promise<CreateHumanPipedriveResponse> {
+    createPerson(@Body() dto: CreatePipedrivePersonDto): Promise<CreateHumanPipedriveResponse> {
         return this.pipedriveService.createPerson(dto);
     }
 
-    @ApiOkResponse({description:"Gets all users from the system.", type: getAllPersonsPipedriveResponse})
+    @ApiOkResponse({description: "Gets all users from the system.", type: getAllPersonsPipedriveResponse})
     @Get("/persons")
-    findAllPersons():Promise<getAllPersonsPipedriveResponse> {
+    findAllPersons(): Promise<getAllPersonsPipedriveResponse> {
         return this.pipedriveService.findAllPersons();
     }
 
-    @ApiOkResponse({description:"Create a person in pipedrive persons database, and then create lead with given title and attach newly created person to this lead.", type: createLeadPipedriveResponse})
+    @ApiOkResponse({description: "Gets all users from the system based on given search term.", type: FindPersonsPipedriveResponse})
+    @Get("persons/find/:term")
+    findPersonsByTerm(@Param("term") term: string): Promise<FindPersonsPipedriveResponse> {
+        console.log(term);
+        return this.pipedriveService.findPersonsByTerm(term);
+    }
+
+    @ApiOkResponse({
+        description: "Create a person in pipedrive persons database, and then create lead with given title and attach newly created person to this lead.",
+        type: createLeadPipedriveResponse
+    })
     @Post("/leads")
-    createLead(@Body() dto: CreatePipedriveLeadDto):Promise<createLeadPipedriveResponse> {
+    createLead(@Body() dto: CreatePipedriveLeadDto): Promise<createLeadPipedriveResponse> {
         return this.pipedriveService.createLead(dto);
     }
-    @ApiOkResponse({description:"A method to validate data submission from component form.", type: createLeadPipedriveResponse})
+
+    @ApiOkResponse({
+        description: "A method to validate data submission from component form.",
+        type: createLeadPipedriveResponse
+    })
     @Post("/validateClientForm")
     processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto)): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
         return this.pipedriveService.processFormFromClient(dto);

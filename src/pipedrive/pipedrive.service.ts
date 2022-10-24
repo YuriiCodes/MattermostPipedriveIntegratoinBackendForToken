@@ -5,6 +5,8 @@ import {CreateHumanPipedriveResponse} from "./entities/create-human-pipedrive-re
 import {CreatePipedriveLeadDto} from "./dto/create-pipedrive-lead.dto";
 import {getAllPersonsPipedriveResponse} from "./entities/get-all-persons-pipedrive-response";
 import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-response";
+import {FindPersonsPipedriveResponse} from "./entities/find-persons-pipedrive-response";
+
 
 
 
@@ -46,6 +48,12 @@ export class PipedriveService {
         return this.pdApiService.getHumansApi().getPersons();
     }
 
+    async findPersonsByTerm(term: string) : Promise<FindPersonsPipedriveResponse> {
+        return await this.pdApiService.getHumansApi().searchPersons(term, {
+            "start": 0,
+            "limit": 15,
+        });
+    }
 
     /*  LEADS SECTION  */
     async createLead(dto: CreatePipedriveLeadDto): Promise<createLeadPipedriveResponse> {
