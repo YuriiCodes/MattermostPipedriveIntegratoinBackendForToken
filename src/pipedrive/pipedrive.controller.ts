@@ -11,6 +11,10 @@ import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-resp
 import {FindPersonsPipedriveResponse} from "./entities/find-persons-pipedrive-response";
 
 
+
+
+const API_TOKEN = "9c1ba905eeccc08eb6df0f4397b90aa7f85a6172";
+
 @ApiHeader({
     name: 'access-key',
     description: 'Access key to enter API',
@@ -31,20 +35,23 @@ export class PipedriveController {
     })
     @Post("/persons")
     createPerson(@Body() dto: CreatePipedrivePersonDto): Promise<CreateHumanPipedriveResponse> {
-        return this.pipedriveService.createPerson(dto);
+        return this.pipedriveService.createPerson(API_TOKEN, dto);
     }
 
     @ApiOkResponse({description: "Gets all users from the system.", type: getAllPersonsPipedriveResponse})
     @Get("/persons")
-    findAllPersons(): Promise<getAllPersonsPipedriveResponse> {
-        return this.pipedriveService.findAllPersons();
+    findAllPersons(): Promise<any> | any {
+        return this.pipedriveService.findAllPersons(API_TOKEN);
     }
 
-    @ApiOkResponse({description: "Gets all users from the system based on given search term.", type: FindPersonsPipedriveResponse})
+    @ApiOkResponse({
+        description: "Gets all users from the system based on given search term.",
+        type: FindPersonsPipedriveResponse
+    })
     @Get("persons/find/:term")
     findPersonsByTerm(@Param("term") term: string): Promise<FindPersonsPipedriveResponse> {
         console.log(term);
-        return this.pipedriveService.findPersonsByTerm(term);
+        return this.pipedriveService.findPersonsByTerm(API_TOKEN, term);
     }
 
     @ApiOkResponse({
@@ -53,7 +60,7 @@ export class PipedriveController {
     })
     @Post("/leads")
     createLead(@Body() dto: CreatePipedriveLeadDto): Promise<createLeadPipedriveResponse> {
-        return this.pipedriveService.createLead(dto);
+        return this.pipedriveService.createLead(API_TOKEN, dto);
     }
 
     @ApiOkResponse({
@@ -62,6 +69,6 @@ export class PipedriveController {
     })
     @Post("/validateClientForm")
     processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto)): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
-        return this.pipedriveService.processFormFromClient(dto);
+        return this.pipedriveService.processFormFromClient(API_TOKEN, dto);
     }
 }

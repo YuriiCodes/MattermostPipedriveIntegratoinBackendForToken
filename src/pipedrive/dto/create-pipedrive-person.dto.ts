@@ -1,7 +1,7 @@
 import {IsEmail, IsNotEmpty, IsString, IsUrl} from "class-validator";
 import {ApiProperty} from "@nestjs/swagger";
 
-export class CreatePipedrivePersonDto {
+export class    CreatePipedrivePersonDto {
     @ApiProperty({
         description: "Email of person to be created in Pipedrive persons database",
         example: "mail@example.com",
