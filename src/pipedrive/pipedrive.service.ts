@@ -15,11 +15,8 @@ export class PipedriveService {
     constructor(private pdApiService: PipedriveApiService, private httpService: HttpService) {}
 
     private baseUrl = "https://api.pipedrive.com/v1";
-    // API token will be set in each service function.
-    private apiKey = "";
-    private setApiKey(key: string) {
-        this.apiKey = key;
-    }
+
+
 
     /*  PERSONS SECTION  */
     // via client
@@ -54,7 +51,6 @@ export class PipedriveService {
 
     // via direct api call
     async createPerson(apiKey: string, dto: CreatePipedrivePersonDto): Promise<any> {
-        this.setApiKey(apiKey);
         console.log(dto);
         const personData = {
             // This value is a key for custom person field for position
@@ -79,7 +75,7 @@ export class PipedriveService {
                 }
             ]
         }
-        const url = `${this.baseUrl}/persons?api_token=${this.apiKey}`;
+        const url = `${this.baseUrl}/persons?api_token=${apiKey}`;
         console.log(url);
         const data = await firstValueFrom(this.httpService.post(url, personData).pipe(
             map(res => res.data),
@@ -97,9 +93,9 @@ export class PipedriveService {
 
     // via direct api call
     async findAllPersons(apiKey: string): Promise<any> {
-        this.setApiKey(apiKey);
+        const url =`${(this.baseUrl)}/persons?api_token=${apiKey}`
         const data = await firstValueFrom(this.httpService
-            .get(`${(this.baseUrl)}/persons?api_token=${this.apiKey}`)
+            .get(url)
             .pipe(
                 map(response => response.data),
                 catchError((error: any, caught:Observable<any>) => {
@@ -121,8 +117,7 @@ export class PipedriveService {
 
     // via direct api call
     async findPersonsByTerm(apiKey: string, term: string): Promise<any> {
-        this.setApiKey("9c1ba905eeccc08eb6df0f4397b90aa7f85a6172");
-        const url = `${(this.baseUrl)}/persons/search?term=${term}&api_token=${this.apiKey}&start=0&limit=15`;
+        const url = `${(this.baseUrl)}/persons/search?term=${term}&api_token=${apiKey}&start=0&limit=15`;
         const data = await firstValueFrom(this.httpService
             .get(url)
             .pipe(
@@ -149,12 +144,11 @@ export class PipedriveService {
 
     // via direct api call
     async createLead(apiKey: string, dto: CreatePipedriveLeadDto): Promise<any> {
-        this.setApiKey("9c1ba905eeccc08eb6df0f4397b90aa7f85a6172");
         const leadData = {
             title: dto.lead_name,
             person_id: dto.person_id,
         }
-        const url = `${(this.baseUrl)}/leads?api_token=${this.apiKey}`;
+        const url = `${(this.baseUrl)}/leads?api_token=${apiKey}`;
 
         const data = await firstValueFrom(this.httpService.post(url, leadData).pipe(
             map(res => res.data),
