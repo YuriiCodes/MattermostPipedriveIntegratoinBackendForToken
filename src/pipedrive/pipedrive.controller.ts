@@ -1,14 +1,26 @@
-import {Controller, Get, Post, Body, UseGuards, ServiceUnavailableException, Param} from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    UseGuards,
+    ServiceUnavailableException,
+    Param,
+    Query,
+    NotFoundException
+} from '@nestjs/common';
 import {PipedriveService} from './pipedrive.service';
 import {CreatePipedrivePersonDto} from './dto/create-pipedrive-person.dto';
 import {CreatePipedriveLeadDto} from "./dto/create-pipedrive-lead.dto";
 import {AuthGuard} from "../auth";
 import {ApiForbiddenResponse, ApiHeader, ApiOkResponse, ApiTags} from "@nestjs/swagger";
 import {CreateHumanPipedriveResponse} from "./entities/create-human-pipedrive-response";
-import {forbiddenResponse} from "../user-info/entities/types";
+import {forbiddenResponse, userInfoResponse} from "../user-info/entities/types";
 import {getAllPersonsPipedriveResponse} from "./entities/get-all-persons-pipedrive-response";
 import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-response";
 import {FindPersonsPipedriveResponse} from "./entities/find-persons-pipedrive-response";
+import {UserInfoModule} from "../user-info/user-info.module";
+import {UserInfoService} from "../user-info/user-info.service";
 
 
 
@@ -26,7 +38,7 @@ const API_TOKEN = "9c1ba905eeccc08eb6df0f4397b90aa7f85a6172";
 @Controller('pipedrive')
 @UseGuards(AuthGuard)
 export class PipedriveController {
-    constructor(private readonly pipedriveService: PipedriveService) {
+    constructor(private readonly pipedriveService: PipedriveService, private userService: UserInfoService) {
     }
 
     @ApiOkResponse({
@@ -34,24 +46,58 @@ export class PipedriveController {
         type: CreateHumanPipedriveResponse
     })
     @Post("/persons")
-    createPerson(@Body() dto: CreatePipedrivePersonDto): Promise<CreateHumanPipedriveResponse> {
-        return this.pipedriveService.createPerson(API_TOKEN, dto);
+    async createPerson(@Body() dto: CreatePipedrivePersonDto,  @Query() query: { mmUID: string }): Promise<CreateHumanPipedriveResponse | any> {
+
+        if (!query.hasOwnProperty("mmUID")) {return {success: false, error: "mmUID is missing"}};
+
+        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+        if(userInfo instanceof NotFoundException){
+            return {
+                success: false,
+                error: "API Key for user not found"
+            };
+        }
+
+        return this.pipedriveService.createPerson(userInfo.pipedriveApiKey, dto);
     }
 
     @ApiOkResponse({description: "Gets all users from the system.", type: getAllPersonsPipedriveResponse})
     @Get("/persons")
-    findAllPersons(): Promise<any> | any {
-        return this.pipedriveService.findAllPersons(API_TOKEN);
+    async findAllPersons( @Query() query: { mmUID: string }): Promise<any> {
+
+        if (!query.hasOwnProperty("mmUID")) {return {success: false, error: "mmUID is missing"}};
+
+        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+        if(userInfo instanceof NotFoundException){
+            return {
+                success: false,
+                error: "API Key for user not found"
+            };
+        }
+
+        return this.pipedriveService.findAllPersons(userInfo.pipedriveApiKey);
     }
+
 
     @ApiOkResponse({
         description: "Gets all users from the system based on given search term.",
         type: FindPersonsPipedriveResponse
     })
     @Get("persons/find/:term")
-    findPersonsByTerm(@Param("term") term: string): Promise<FindPersonsPipedriveResponse> {
-        console.log(term);
-        return this.pipedriveService.findPersonsByTerm(API_TOKEN, term);
+    async findPersonsByTerm(@Param("term") term: string, @Query() query: { mmUID: string }): Promise<FindPersonsPipedriveResponse | any> {
+
+        if (!query.hasOwnProperty("mmUID")) {return {success: false, error: "mmUID is missing"}};
+
+        // fetch pipedrive api token from database by mattermost UserID.
+         const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+            if(userInfo instanceof NotFoundException){
+                return {
+                    success: false,
+                    error: "API Key for user not found"
+                };
+            }
+
+        return this.pipedriveService.findPersonsByTerm(userInfo.pipedriveApiKey, term);
     }
 
     @ApiOkResponse({
@@ -59,8 +105,19 @@ export class PipedriveController {
         type: createLeadPipedriveResponse
     })
     @Post("/leads")
-    createLead(@Body() dto: CreatePipedriveLeadDto): Promise<createLeadPipedriveResponse> {
-        return this.pipedriveService.createLead(API_TOKEN, dto);
+    async createLead(@Body() dto: CreatePipedriveLeadDto,  @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | any>  {
+
+        if (!query.hasOwnProperty("mmUID")) {return {success: false, error: "mmUID is missing"}};
+
+        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+        if(userInfo instanceof NotFoundException){
+            return {
+                success: false,
+                error: "API Key for user not found"
+            };
+        }
+
+        return this.pipedriveService.createLead(userInfo.pipedriveApiKey, dto);
     }
 
     @ApiOkResponse({
@@ -68,7 +125,17 @@ export class PipedriveController {
         type: createLeadPipedriveResponse
     })
     @Post("/validateClientForm")
-    processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto)): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
-        return this.pipedriveService.processFormFromClient(API_TOKEN, dto);
+    async processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto),  @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | ServiceUnavailableException | any>  {
+
+        if (!query.hasOwnProperty("mmUID")) {return {success: false, error: "mmUID is missing"}};
+        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+        if(userInfo instanceof NotFoundException){
+            return {
+                success: false,
+                error: "API Key for user not found"
+            };
+        }
+
+        return this.pipedriveService.processFormFromClient(userInfo.pipedriveApiKey, dto);
     }
 }
