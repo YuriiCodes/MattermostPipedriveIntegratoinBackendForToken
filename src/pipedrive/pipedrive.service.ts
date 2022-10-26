@@ -1,4 +1,4 @@
-import {Injectable, ServiceUnavailableException} from '@nestjs/common';
+import {Injectable, NotFoundException, ServiceUnavailableException} from '@nestjs/common';
 import {CreatePipedrivePersonDto} from './dto/create-pipedrive-person.dto';
 import {PipedriveApiService} from "./pipedrive-api.service";
 import {CreateHumanPipedriveResponse} from "./entities/create-human-pipedrive-response";
@@ -8,11 +8,13 @@ import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-resp
 import {FindPersonsPipedriveResponse} from "./entities/find-persons-pipedrive-response";
 import {HttpService} from "@nestjs/axios";
 import {catchError, firstValueFrom, map, Observable, throwError} from 'rxjs';
+import {UserInfoService} from "../user-info/user-info.service";
+import {userInfoResponse} from "../user-info/entities/types";
 
 
 @Injectable()
 export class PipedriveService {
-    constructor(private pdApiService: PipedriveApiService, private httpService: HttpService) {}
+    constructor(private pdApiService: PipedriveApiService, private httpService: HttpService, private userService: UserInfoService) {}
 
     private baseUrl = "https://api.pipedrive.com/v1";
 
@@ -50,7 +52,16 @@ export class PipedriveService {
     // }
 
     // via direct api call
-    async createPerson(apiKey: string, dto: CreatePipedrivePersonDto): Promise<any> {
+    async createPerson(query: { mmUID: string }, dto: CreatePipedrivePersonDto): Promise<any> {
+
+        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+        if(userInfo instanceof NotFoundException){
+            return {
+                success: false,
+                error: "API Key for user not found"
+            };
+        }
+
         console.log(dto);
         const personData = {
             // This value is a key for custom person field for position
@@ -75,7 +86,7 @@ export class PipedriveService {
                 }
             ]
         }
-        const url = `${this.baseUrl}/persons?api_token=${apiKey}`;
+        const url = `${this.baseUrl}/persons?api_token=${userInfo.pipedriveApiKey}`;
         console.log(url);
         const data = await firstValueFrom(this.httpService.post(url, personData).pipe(
             map(res => res.data),
@@ -92,8 +103,16 @@ export class PipedriveService {
     // }
 
     // via direct api call
-    async findAllPersons(apiKey: string): Promise<any> {
-        const url =`${(this.baseUrl)}/persons?api_token=${apiKey}`
+    async findAllPersons(query: { mmUID: string }): Promise<any> {
+        const userInfo: userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+        if(userInfo instanceof NotFoundException){
+            return {
+                success: false,
+                error: "API Key for user not found"
+            };
+        }
+
+        const url =`${(this.baseUrl)}/persons?api_token=${userInfo.pipedriveApiKey}`
         const data = await firstValueFrom(this.httpService
             .get(url)
             .pipe(
@@ -116,8 +135,16 @@ export class PipedriveService {
     // }
 
     // via direct api call
-    async findPersonsByTerm(apiKey: string, term: string): Promise<any> {
-        const url = `${(this.baseUrl)}/persons/search?term=${term}&api_token=${apiKey}&start=0&limit=15`;
+    async findPersonsByTerm( query: { mmUID: string }, term: string): Promise<any> {
+        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+        if(userInfo instanceof NotFoundException){
+            return {
+                success: false,
+                error: "API Key for user not found"
+            };
+        }
+
+        const url = `${(this.baseUrl)}/persons/search?term=${term}&api_token=${userInfo.pipedriveApiKey}&start=0&limit=15`;
         const data = await firstValueFrom(this.httpService
             .get(url)
             .pipe(
@@ -143,12 +170,20 @@ export class PipedriveService {
     // }
 
     // via direct api call
-    async createLead(apiKey: string, dto: CreatePipedriveLeadDto): Promise<any> {
+    async createLead(query: { mmUID: string }, dto: CreatePipedriveLeadDto): Promise<any> {
+        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
+        if(userInfo instanceof NotFoundException){
+            return {
+                success: false,
+                error: "API Key for user not found"
+            };
+        }
+
         const leadData = {
             title: dto.lead_name,
             person_id: dto.person_id,
         }
-        const url = `${(this.baseUrl)}/leads?api_token=${apiKey}`;
+        const url = `${(this.baseUrl)}/leads?api_token=${userInfo.pipedriveApiKey}`;
 
         const data = await firstValueFrom(this.httpService.post(url, leadData).pipe(
             map(res => res.data),
@@ -164,11 +199,13 @@ export class PipedriveService {
     This method firstly creates a person in pipedrive persons database, gets ID of newly created person,
      and then uses this id to create lead. We need person_id to attach person with that ID it to lead.
      */
-    async processFormFromClient(apiKey: string, dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto)): Promise<createLeadPipedriveResponse | ServiceUnavailableException> {
+    async processFormFromClient(query: { mmUID: string }, dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto)): Promise<createLeadPipedriveResponse | ServiceUnavailableException | any> {
+
         // Create person
         let personId: number = -1;
+        // TODO: refactor this method, so that it doesn't call userInfo database to get the same api key 2 times: while creating person, and creating lead.
         try {
-            const personInfo = await this.createPerson(apiKey,{
+            const personInfo = await this.createPerson(query,{
                 name: dto.name,
                 email: dto.email,
                 phone: dto.phone,
@@ -186,7 +223,7 @@ export class PipedriveService {
 
         // Create lead
         try {
-            return await this.createLead(apiKey,{
+            return await this.createLead(query,{
                 lead_name: dto.lead_name,
                 person_id: personId
             });

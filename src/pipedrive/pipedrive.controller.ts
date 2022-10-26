@@ -44,30 +44,13 @@ export class PipedriveController {
     @Post("/persons")
     async createPerson(@Body() dto: CreatePipedrivePersonDto,  @Query() query: { mmUID: string }): Promise<CreateHumanPipedriveResponse | any> {
 
-        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-        if(userInfo instanceof NotFoundException){
-            return {
-                success: false,
-                error: "API Key for user not found"
-            };
-        }
-
-        return this.pipedriveService.createPerson(userInfo.pipedriveApiKey, dto);
+        return this.pipedriveService.createPerson(query, dto);
     }
 
     @ApiOkResponse({description: "Gets all users from the system.", type: getAllPersonsPipedriveResponse})
     @Get("/persons")
     async findAllPersons( @Query() query: { mmUID: string }): Promise<any> {
-
-        const userInfo: userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-        if(userInfo instanceof NotFoundException){
-            return {
-                success: false,
-                error: "API Key for user not found"
-            };
-        }
-
-        return this.pipedriveService.findAllPersons(userInfo.pipedriveApiKey);
+        return this.pipedriveService.findAllPersons(query);
     }
 
 
@@ -77,18 +60,7 @@ export class PipedriveController {
     })
     @Get("persons/find/:term")
     async findPersonsByTerm(@Param("term") term: string, @Query() query: { mmUID: string }): Promise<FindPersonsPipedriveResponse | any> {
-
-
-        // fetch pipedrive api token from database by mattermost UserID.
-         const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-            if(userInfo instanceof NotFoundException){
-                return {
-                    success: false,
-                    error: "API Key for user not found"
-                };
-            }
-
-        return this.pipedriveService.findPersonsByTerm(userInfo.pipedriveApiKey, term);
+        return this.pipedriveService.findPersonsByTerm(query, term);
     }
 
     @ApiOkResponse({
@@ -97,16 +69,7 @@ export class PipedriveController {
     })
     @Post("/leads")
     async createLead(@Body() dto: CreatePipedriveLeadDto,  @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | any>  {
-
-        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-        if(userInfo instanceof NotFoundException){
-            return {
-                success: false,
-                error: "API Key for user not found"
-            };
-        }
-
-        return this.pipedriveService.createLead(userInfo.pipedriveApiKey, dto);
+        return this.pipedriveService.createLead(query, dto);
     }
 
     @ApiOkResponse({
@@ -115,14 +78,6 @@ export class PipedriveController {
     })
     @Post("/validateClientForm")
     async processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto),  @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | ServiceUnavailableException | any>  {
-
-        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-        if(userInfo instanceof NotFoundException){
-            return {
-                success: false,
-                error: "API Key for user not found"
-            };
-        }
-        return this.pipedriveService.processFormFromClient(userInfo.pipedriveApiKey, dto);
+        return this.pipedriveService.processFormFromClient(query, dto);
     }
 }
