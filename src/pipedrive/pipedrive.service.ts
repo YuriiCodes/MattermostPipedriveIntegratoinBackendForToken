@@ -10,14 +10,15 @@ import {HttpService} from "@nestjs/axios";
 import {catchError, firstValueFrom, map, Observable, throwError} from 'rxjs';
 import {UserInfoService} from "../user-info/user-info.service";
 import {userInfoResponse} from "../user-info/entities/types";
+import {IsApiKeyValid} from "./entities/is-api-key-valid";
 
 
 @Injectable()
 export class PipedriveService {
-    constructor(private pdApiService: PipedriveApiService, private httpService: HttpService, private userService: UserInfoService) {}
+    constructor(private pdApiService: PipedriveApiService, private httpService: HttpService, private userService: UserInfoService) {
+    }
 
     private baseUrl = "https://api.pipedrive.com/v1";
-
 
 
     /*  PERSONS SECTION  */
@@ -54,15 +55,13 @@ export class PipedriveService {
     // via direct api call
     async createPerson(query: { mmUID: string }, dto: CreatePipedrivePersonDto): Promise<any> {
 
-        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-        if(userInfo instanceof NotFoundException){
+        const userInfo: userInfoResponse | NotFoundException = await this.userService.getUserInfo(query.mmUID);
+        if (userInfo instanceof NotFoundException) {
             return {
                 success: false,
                 error: "API Key for user not found"
             };
         }
-
-        console.log(dto);
         const personData = {
             // This value is a key for custom person field for position
             "cbf02adcbf18655ca250a8d8fbfba87bd99a2b6c": dto.position,
@@ -104,26 +103,51 @@ export class PipedriveService {
 
     // via direct api call
     async findAllPersons(query: { mmUID: string }): Promise<any> {
-        const userInfo: userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-        if(userInfo instanceof NotFoundException){
+        const userInfo: userInfoResponse | NotFoundException = await this.userService.getUserInfo(query.mmUID);
+        if (userInfo instanceof NotFoundException) {
             return {
                 success: false,
                 error: "API Key for user not found"
             };
         }
 
-        const url =`${(this.baseUrl)}/persons?api_token=${userInfo.pipedriveApiKey}`
+        const url = `${(this.baseUrl)}/persons?api_token=${userInfo.pipedriveApiKey}`
         const data = await firstValueFrom(this.httpService
             .get(url)
             .pipe(
                 map(response => response.data),
-                catchError((error: any, caught:Observable<any>) => {
+                catchError((error: any, caught: Observable<any>) => {
                     console.log(error);
                     return throwError(error);
                 })
             )
         );
         return data;
+    }
+
+    async validatePipedriveApiKey(query: { mmUID: string }): Promise<IsApiKeyValid> {
+        try {
+            const userInfo: userInfoResponse | NotFoundException = await this.userService.getUserInfo(query.mmUID);
+            // if there are no user info in db, API key is automatically considered invalid
+            if (userInfo instanceof NotFoundException) {
+                return {
+                    isValid: false,
+                };
+            }
+
+            // Since there are no method to validate pipedrive api key, we will try to get fist person info, and if it will be success, we will return true, if not - false
+            const url = `${(this.baseUrl)}/persons?api_token=${userInfo.pipedriveApiKey}&limit=1`
+            const data = await firstValueFrom(this.httpService
+                .get(url)
+                .pipe(
+                    map(response => response.data),
+                )
+            );
+            return {isValid: true};
+        }
+        catch(err) {
+            return {isValid: false};
+        }
     }
 
     // via client
@@ -135,9 +159,9 @@ export class PipedriveService {
     // }
 
     // via direct api call
-    async findPersonsByTerm( query: { mmUID: string }, term: string): Promise<any> {
-        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-        if(userInfo instanceof NotFoundException){
+    async findPersonsByTerm(query: { mmUID: string }, term: string): Promise<any> {
+        const userInfo: userInfoResponse | NotFoundException = await this.userService.getUserInfo(query.mmUID);
+        if (userInfo instanceof NotFoundException) {
             return {
                 success: false,
                 error: "API Key for user not found"
@@ -171,8 +195,8 @@ export class PipedriveService {
 
     // via direct api call
     async createLead(query: { mmUID: string }, dto: CreatePipedriveLeadDto): Promise<any> {
-        const userInfo:userInfoResponse | NotFoundException =  await this.userService.getUserInfo(query.mmUID);
-        if(userInfo instanceof NotFoundException){
+        const userInfo: userInfoResponse | NotFoundException = await this.userService.getUserInfo(query.mmUID);
+        if (userInfo instanceof NotFoundException) {
             return {
                 success: false,
                 error: "API Key for user not found"
@@ -205,7 +229,7 @@ export class PipedriveService {
         let personId: number = -1;
         // TODO: refactor this method, so that it doesn't call userInfo database to get the same api key 2 times: while creating person, and creating lead.
         try {
-            const personInfo = await this.createPerson(query,{
+            const personInfo = await this.createPerson(query, {
                 name: dto.name,
                 email: dto.email,
                 phone: dto.phone,
@@ -223,7 +247,7 @@ export class PipedriveService {
 
         // Create lead
         try {
-            return await this.createLead(query,{
+            return await this.createLead(query, {
                 lead_name: dto.lead_name,
                 person_id: personId
             });

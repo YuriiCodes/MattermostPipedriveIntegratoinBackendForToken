@@ -6,8 +6,7 @@ import {
     UseGuards,
     ServiceUnavailableException,
     Param,
-    Query,
-    NotFoundException
+    Query
 } from '@nestjs/common';
 import {PipedriveService} from './pipedrive.service';
 import {CreatePipedrivePersonDto} from './dto/create-pipedrive-person.dto';
@@ -21,7 +20,8 @@ import {createLeadPipedriveResponse} from "./entities/create-lead-pipedrive-resp
 import {FindPersonsPipedriveResponse} from "./entities/find-persons-pipedrive-response";
 import {UserInfoService} from "../user-info/user-info.service";
 import {UserIdQueryParamGuard} from "./user-id-query-param.guard";
-
+import axios, {AxiosError} from 'axios';
+import {IsApiKeyValid} from "./entities/is-api-key-valid";
 
 
 @ApiHeader({
@@ -38,18 +38,27 @@ export class PipedriveController {
     }
 
     @ApiOkResponse({
+        description: 'Returns true if the pipedrive api key is valid, false - if not.',
+        type: IsApiKeyValid,
+    })
+    @Get("/isApiKeyValid")
+    async validatePipedriveApiKey(@Query() query: { mmUID: string }): Promise<IsApiKeyValid> {
+        return this.pipedriveService.validatePipedriveApiKey(query);
+    }
+
+    @ApiOkResponse({
         description: 'Creates a person in PipeDrive database and returns created user.',
         type: CreateHumanPipedriveResponse
     })
     @Post("/persons")
-    async createPerson(@Body() dto: CreatePipedrivePersonDto,  @Query() query: { mmUID: string }): Promise<CreateHumanPipedriveResponse | any> {
-
+    async createPerson(@Body() dto: CreatePipedrivePersonDto, @Query() query: { mmUID: string }): Promise<CreateHumanPipedriveResponse | any> {
         return this.pipedriveService.createPerson(query, dto);
     }
 
+
     @ApiOkResponse({description: "Gets all users from the system.", type: getAllPersonsPipedriveResponse})
     @Get("/persons")
-    async findAllPersons( @Query() query: { mmUID: string }): Promise<any> {
+    async findAllPersons(@Query() query: { mmUID: string }): Promise<any> {
         return this.pipedriveService.findAllPersons(query);
     }
 
@@ -63,21 +72,23 @@ export class PipedriveController {
         return this.pipedriveService.findPersonsByTerm(query, term);
     }
 
+
     @ApiOkResponse({
         description: "Create a person in pipedrive persons database, and then create lead with given title and attach newly created person to this lead.",
         type: createLeadPipedriveResponse
     })
     @Post("/leads")
-    async createLead(@Body() dto: CreatePipedriveLeadDto,  @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | any>  {
+    async createLead(@Body() dto: CreatePipedriveLeadDto, @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | any> {
         return this.pipedriveService.createLead(query, dto);
     }
+
 
     @ApiOkResponse({
         description: "A method to validate data submission from component form.",
         type: createLeadPipedriveResponse
     })
     @Post("/validateClientForm")
-    async processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto),  @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | ServiceUnavailableException | any>  {
+    async processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto), @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | ServiceUnavailableException | any> {
         return this.pipedriveService.processFormFromClient(query, dto);
     }
 }
