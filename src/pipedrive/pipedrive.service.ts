@@ -109,6 +109,29 @@ export class PipedriveService {
         }
     }
 
+    async validatePipedriveApiKeyWithApiKey(query: { api_key: string }): Promise<IsApiKeyValid> {
+        // There are no key provided, therefore it is invalid
+        if (!query.api_key) {
+            return {isValid: false};
+        }
+        try {
+            // Since there are no method to validate pipedrive api key, we will try to get fist person info, and if it will be success, we will return true, if not - false
+            const url = `${(this.baseUrl)}/persons?api_token=${query.api_key}&limit=1`
+
+            // We just perform the request without needing any data from it back. We just need to know if it was successful or not
+            await firstValueFrom(this.httpService
+                .get(url)
+                .pipe(
+                    map(response => response.data),
+                )
+            );
+            return {isValid: true};
+        }
+        catch(err) {
+            return {isValid: false};
+        }
+    }
+
     async findPersonsByTerm(query: { mmUID: string }, term: string): Promise<any > {
         const userInfo: userInfoResponse | NotFoundException = await this.userService.getUserInfo(query.mmUID);
         if (userInfo instanceof NotFoundException) {

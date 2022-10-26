@@ -31,18 +31,28 @@ import {ApiKeyNotFoundErrorResponse} from "./entities/api-key-not-found-error-re
 @ApiForbiddenResponse({description: 'Access key is not valid', type: forbiddenResponse})
 @ApiTags('Interacting with Pipedrive')
 @Controller('pipedrive')
-@UseGuards(AuthGuard, UserIdQueryParamGuard)
+@UseGuards(AuthGuard)
 export class PipedriveController {
     constructor(private readonly pipedriveService: PipedriveService) {
     }
 
     @ApiOkResponse({
-        description: 'Returns true if the pipedrive api key is valid, false - if not.',
+        description: 'Returns true if the pipedrive api key is valid, false - if not. This method accepts mattermostUserId and check validity of his key.',
         type: IsApiKeyValid,
     })
     @Get("/isApiKeyValid")
+    @UseGuards(UserIdQueryParamGuard)
     async validatePipedriveApiKey(@Query() query: { mmUID: string }): Promise<IsApiKeyValid> {
         return this.pipedriveService.validatePipedriveApiKey(query);
+    }
+
+    @ApiOkResponse({
+        description: 'Returns true if the pipedrive api key is valid, false - if not. This method accepts pipedrive api key validity of it.',
+        type: IsApiKeyValid,
+    })
+    @Get("/isApiKeyValidWithApiKey")
+    async validatePipedriveApiKeyWithApiKey(@Query() query: { api_key: string }): Promise<IsApiKeyValid> {
+        return this.pipedriveService.validatePipedriveApiKeyWithApiKey(query);
     }
 
     @ApiOkResponse({
@@ -50,6 +60,7 @@ export class PipedriveController {
         type: CreateHumanPipedriveResponse
     })
     @Post("/persons")
+    @UseGuards(UserIdQueryParamGuard)
     async createPerson(@Body() dto: CreatePipedrivePersonDto, @Query() query: { mmUID: string }):  Promise<CreateHumanPipedriveResponse | ApiKeyNotFoundErrorResponse> {
         return this.pipedriveService.createPerson(query, dto);
     }
@@ -57,6 +68,7 @@ export class PipedriveController {
 
     @ApiOkResponse({description: "Gets all users from the system.", type: getAllPersonsPipedriveResponse})
     @Get("/persons")
+    @UseGuards(UserIdQueryParamGuard)
     async findAllPersons(@Query() query: { mmUID: string }):Promise<getAllPersonsPipedriveResponse | ApiKeyNotFoundErrorResponse>{
         return this.pipedriveService.findAllPersons(query);
     }
@@ -67,6 +79,7 @@ export class PipedriveController {
         type: FindPersonsPipedriveResponse
     })
     @Get("persons/find/:term")
+    @UseGuards(UserIdQueryParamGuard)
     async findPersonsByTerm(@Param("term") term: string, @Query() query: { mmUID: string }): Promise<any> {
         return this.pipedriveService.findPersonsByTerm(query, term);
     }
@@ -77,6 +90,7 @@ export class PipedriveController {
         type: createLeadPipedriveResponse
     })
     @Post("/leads")
+    @UseGuards(UserIdQueryParamGuard)
     async createLead(@Body() dto: CreatePipedriveLeadDto, @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | ApiKeyNotFoundErrorResponse> {
         return this.pipedriveService.createLead(query, dto);
     }
@@ -87,6 +101,7 @@ export class PipedriveController {
         type: createLeadPipedriveResponse
     })
     @Post("/validateClientForm")
+    @UseGuards(UserIdQueryParamGuard)
     async processFormFromClient(@Body() dto: (CreatePipedrivePersonDto & CreatePipedriveLeadDto), @Query() query: { mmUID: string }): Promise<createLeadPipedriveResponse | ServiceUnavailableException | ApiKeyNotFoundErrorResponse> {
         return this.pipedriveService.processFormFromClient(query, dto);
     }
