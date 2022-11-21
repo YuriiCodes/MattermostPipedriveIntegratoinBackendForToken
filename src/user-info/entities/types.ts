@@ -2,7 +2,7 @@ import {ApiProperty} from "@nestjs/swagger";
 
 export class userInfoResponse {
     @ApiProperty()
-    id: string;
+    id: number;
     @ApiProperty()
     createdAt: Date;
     @ApiProperty()
