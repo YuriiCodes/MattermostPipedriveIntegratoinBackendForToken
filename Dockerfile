@@ -1,5 +1,5 @@
 # Base image
-FROM node:18
+FROM node:17
 
 # Create app directory
 WORKDIR /app
@@ -20,6 +20,8 @@ RUN npm install
 
 # Initialize prizma for managing database
 RUN npx prisma generate
+
+
 
 # Expose port 3000
 ENV PORT=3000

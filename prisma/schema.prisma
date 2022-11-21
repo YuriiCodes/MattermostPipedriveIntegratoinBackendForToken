@@ -3,30 +3,22 @@
 
 generator client {
   provider = "prisma-client-js"
+   binaryTargets   = ["native"]
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User{
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    createdAt DateTime @default(now())
-    updateAt DateTime @updatedAt
-
-    email String
-    hash String
-}
-
 model apiToken {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
+    id        Int      @id @default(autoincrement())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    mattermostUserId String
-    pipedriveApiKey String
+    mattermostUserId String  @db.VarChar(255)
+    pipedriveApiKey String  @db.VarChar(255)
 
-    linkedInLogin String
-    linkedInPassword String
+    linkedInLogin String  @db.VarChar(255)
+    linkedInPassword String  @db.VarChar(255)
 }
